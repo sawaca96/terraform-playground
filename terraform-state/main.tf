@@ -3,40 +3,31 @@ provider "aws" {
   profile = "terraform-up"
 }
 
+
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "sawaca96-terraform-state"
+  bucket        = "sawaca96-terraform-state"
+  force_destroy = true # 버켓이 empty가 아니어도 삭제함
 
   versioning {
     enabled = true
   }
 
-  #   lifecycle {
-  #     prevent_destroy = true
-  #   }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
+resource "aws_dynamodb_table" "terrform_lock" {
+  name           = "terraform-lock"
+  hash_key       = "LockID"
+  read_capacity  = 2
+  write_capacity = 2
 
-# terraform {
-#   backend "s3" {
-#     bucket         = "sawaca96-terraform-state"
-#     key            = "terraform.tfstate"
-#     region         = "ap-northeast-2"
-#     encrypt        = true
-#     dynamodb_table = "terraform-lock"
-#   }
-# }
-
-# resource "aws_dynamodb_table" "terrform_lock" {
-#   name           = "terraform-lock"
-#   hash_key       = "LockID"
-#   read_capacity  = 2
-#   write_capacity = 2
-
-#   attribute {
-#     name = "LockID"
-#     type = "S"
-#   }
-# }
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
 
 output "s3_bucket_arn" {
   value = aws_s3_bucket.terraform_state.arn
